@@ -32,6 +32,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> manejarReglaDeNegocio(IllegalArgumentException ex) {
+        // SOLUCION RETO (paso 5): errores de regla de negocio regresan 400 controlado.
+        ErrorResponse body = new ErrorResponse(
+                "BUSINESS_RULE_ERROR",
+                ex.getMessage(),
+                Instant.now(),
+                Map.of()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> manejarGenerica(Exception ex) {
         ErrorResponse body = new ErrorResponse(
@@ -41,16 +53,5 @@ public class GlobalExceptionHandler {
                 Map.of()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }
-    
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> manejarReglaDeNegocio(IllegalArgumentException ex) {
-        ErrorResponse body = new ErrorResponse(
-                "BUSINESS_RULE_ERROR",
-                ex.getMessage(),
-                Instant.now(),
-                Map.of()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 }

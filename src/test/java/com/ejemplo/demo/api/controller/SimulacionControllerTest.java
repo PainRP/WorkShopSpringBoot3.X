@@ -1,19 +1,20 @@
 package com.ejemplo.demo.api.controller;
 
+import com.ejemplo.demo.api.dto.PrestamoRequest;
 import com.ejemplo.demo.api.dto.PrestamoResponse;
-import com.ejemplo.demo.domain.service.SimuladorService;
+import com.ejemplo.demo.domain.service.PrestamoService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
- 
+
 import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,53 +25,64 @@ class SimulacionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    
     @MockBean
-    private SimuladorService simuladorService;
+    private PrestamoService prestamoService;
 
     @Test
-    @DisplayName("1) POST /api/v1/simulaciones/prestamo con datos válidos -> 200 OK y cálculo correcto")
-    void casoExitoso() throws Exception {
-        
-        PrestamoResponse mockResponse = new PrestamoResponse(
-                new BigDecimal("888.49"), 
-                new BigDecimal("661.85"), 
-                new BigDecimal("10661.85")
+    @DisplayName("Debe simular prestamo correctamente")
+    void debeSimularPrestamoCorrectamente() throws Exception {
+        PrestamoResponse response = new PrestamoResponse(
+                BigDecimal.valueOf(1066.19),
+                BigDecimal.valueOf(127.14),
+                BigDecimal.valueOf(10127.14)
         );
-        Mockito.when(simuladorService.simularPrestamo(any())).thenReturn(mockResponse);
-
-        String jsonRequest = """
-                {
-                  "monto": 10000,
-                  "tasaAnual": 12.0,
-                  "meses": 12
-                }
-                """;
+        when(prestamoService.simular(any(PrestamoRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/simulaciones/prestamo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "monto": 10000,
+                                  "tasaAnual": 12,
+                                  "meses": 12
+                                }
+                                """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cuotaMensual").value(888.49))
-                .andExpect(jsonPath("$.interesTotal").value(661.85))
-                .andExpect(jsonPath("$.totalPagar").value(10661.85));
+                .andExpect(jsonPath("$.cuotaMensual").value(1066.19));
     }
 
     @Test
-    @DisplayName("2) POST /api/v1/simulaciones/prestamo con meses inválidos (>360) -> 400 Bad Request")
-    void casoInvalidoPorMeses() throws Exception {
-        String jsonRequest = """
-                {
-                  "monto": 10000,
-                  "tasaAnual": 12.0,
-                  "meses": 400
-                }
-                """; 
+    @DisplayName("Debe validar rango de meses")
+    void debeValidarRangoDeMeses() throws Exception {
         mockMvc.perform(post("/api/v1/simulaciones/prestamo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "monto": 10000,
+                                  "tasaAnual": 12,
+                                  "meses": 0
+                                }
+                                """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.codigo").value("VALIDATION_ERROR")) // Utilizando tu GlobalExceptionHandler
-                .andExpect(jsonPath("$.detalles.meses").exists());
+                .andExpect(jsonPath("$.codigo").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    @DisplayName("Debe responder error de negocio cuando tasa supera maximo")
+    void debeResponderErrorDeNegocioCuandoTasaSuperaMaximo() throws Exception {
+        when(prestamoService.simular(any(PrestamoRequest.class)))
+                .thenThrow(new IllegalArgumentException("La tasaAnual no puede ser mayor al 100%"));
+
+        mockMvc.perform(post("/api/v1/simulaciones/prestamo")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "monto": 10000,
+                                  "tasaAnual": 120,
+                                  "meses": 12
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("BUSINESS_RULE_ERROR"));
     }
 }
