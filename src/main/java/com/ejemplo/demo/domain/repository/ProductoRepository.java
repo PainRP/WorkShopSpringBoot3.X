@@ -10,7 +10,7 @@ import com.ejemplo.demo.domain.model.Producto;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Long>{
 
-	List<Producto> findByNombreContainingIgnoteCase(String name);
+	List<Producto> findByNombreContainingIgnoreCase(String name);
 	
 	List<Producto> findByPrecioLessThan(int precio);
 	

@@ -1,0 +1,238 @@
+openapi: 3.0.3
+info:
+  title: Workshop Spring Boot API
+  description: API generada para el taller de Spring Boot 3.x con enfoque Contract-First.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+
+paths:
+  # --- TAG: workshop ---
+  /api/v1:
+    get:
+      tags:
+        - workshop
+      summary: Ver estado del workshop
+      operationId: getWorkshopHealth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /api/v1/saludos:
+    get:
+      tags:
+        - workshop
+      summary: Obtener saludo por nombre
+      operationId: saludarPorGet
+      parameters:
+        - name: nombre
+          in: query
+          required: false
+          schema:
+            type: string
+            default: Mundo
+      responses:
+        '200':
+          description: Saludo generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaludoResponse'
+    post:
+      tags:
+        - workshop
+      summary: Crear un saludo personalizado
+      operationId: saludarPorPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaludoRequest'
+      responses:
+        '201':
+          description: Saludo creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaludoResponse'
+        '400':
+          description: Error de validación
+
+  # --- TAG: simulaciones ---
+  /api/v1/simulaciones/prestamo:
+    post:
+      tags:
+        - simulaciones
+      summary: Simulación de cuota de préstamo
+      operationId: simularPrestamo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrestamoRequest'
+      responses:
+        '200':
+          description: Simulación calculada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrestamoResponse'
+        '400':
+          description: Datos de entrada inválidos o error de negocio
+
+  # --- TAG: demo-estado ---
+  /api/v1/demo/estado/singleton:
+    get:
+      tags:
+        - demo-estado
+      summary: Obtener valor actual del singleton
+      operationId: obtenerSingleton
+      responses:
+        '200':
+          description: Valor obtenido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+
+  /api/v1/demo/estado/singleton/{valor}:
+    post:
+      tags:
+        - demo-estado
+      summary: Actualizar valor del singleton
+      operationId: actualizarSingleton
+      parameters:
+        - name: valor
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valor actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+
+  /api/v1/demo/estado/singleton/reset:
+    post:
+      tags:
+        - demo-estado
+      summary: Reiniciar valor del singleton
+      operationId: reiniciarSingleton
+      responses:
+        '200':
+          description: Valor reiniciado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+
+  /api/v1/demo/estado/manual:
+    get:
+      tags:
+        - demo-estado
+      summary: Obtener valor actual instancia manual
+      operationId: obtenerManual
+      responses:
+        '200':
+          description: Valor obtenido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+
+  /api/v1/demo/estado/manual/{valor}:
+    post:
+      tags:
+        - demo-estado
+      summary: Actualizar valor instancia manual
+      operationId: actualizarManual
+      parameters:
+        - name: valor
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valor actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+
+components:
+  schemas:
+    StatusResponse:
+      type: object
+      properties:
+        estado:
+          type: string
+          example: "ok"
+        mensaje:
+          type: string
+          example: "Workshop Spring Boot activo"
+
+    SaludoRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+
+    SaludoResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: "Hola, Ana"
+
+    PrestamoRequest:
+      type: object
+      required:
+        - monto
+        - tasaAnual
+        - meses
+      properties:
+        monto:
+          type: number
+          minimum: 0.01
+        tasaAnual:
+          type: number
+          minimum: 0.01
+        meses:
+          type: integer
+          minimum: 1
+          maximum: 360
+
+    PrestamoResponse:
+      type: object
+      properties:
+        cuotaMensual:
+          type: number
+        interesTotal:
+          type: number
+        totalPagar:
+          type: number
+
+    EstadoResponse:
+      type: object
+      properties:
+        tipo:
+          type: string
+          example: "singleton"
+        valorActual:
+          type: integer
+          example: 25

@@ -18,6 +18,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencies>
@@ -30,7 +32,8 @@
     		<artifactId>postgresql</artifactId>
     		<scope>runtime</scope>
 		</dependency>
-        <dependency>
+		
+		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
@@ -44,11 +47,28 @@
             <version>2.6.0</version>
         </dependency>
 
-        <dependency>
+		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 
     <build>
@@ -57,6 +77,43 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+    <plugin>
+    <groupId>org.openapitools</groupId>
+    <artifactId>openapi-generator-maven-plugin</artifactId>
+    <version>7.4.0</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+            <configuration>
+    <inputSpec>${project.basedir}/src/main/resources/openapi/openapi.yaml</inputSpec>
+    <generatorName>spring</generatorName>
+    <apiPackage>com.ejemplo.demo.api.contract</apiPackage>
+    <modelPackage>com.ejemplo.demo.api.dto</modelPackage>
+    
+    <generateModels>false</generateModels> 
+    
+    <configOptions>
+        <interfaceOnly>true</interfaceOnly>
+        <useSpringBoot3>true</useSpringBoot3>
+        <useJakartaEe>true</useJakartaEe>
+        <skipDefaultInterface>true</skipDefaultInterface>
+        <useTags>true</useTags>
+    </configOptions>
+
+    <importMappings>
+        <importMapping>StatusResponse=com.ejemplo.demo.api.dto.StatusResponse</importMapping>
+        <importMapping>SaludoRequest=com.ejemplo.demo.api.dto.SaludoRequest</importMapping>
+        <importMapping>SaludoResponse=com.ejemplo.demo.api.dto.SaludoResponse</importMapping>
+        <importMapping>PrestamoRequest=com.ejemplo.demo.api.dto.PrestamoRequest</importMapping>
+        <importMapping>PrestamoResponse=com.ejemplo.demo.api.dto.PrestamoResponse</importMapping>
+        <importMapping>EstadoResponse=com.ejemplo.demo.api.dto.EstadoResponse</importMapping>
+    </importMappings>
+</configuration>
+        </execution>
+    </executions>
+</plugin>
         </plugins>
     </build>
 </project>

@@ -54,4 +54,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+    
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> manejarNoEncontrado(jakarta.persistence.EntityNotFoundException ex) {
+        ErrorResponse body = new ErrorResponse(
+                "NOT_FOUND",
+                ex.getMessage(),
+                Instant.now(),
+                Map.of()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
 }

@@ -1,16 +1,9 @@
-package com.ejemplo.demo.domain.model;
+package com.ejemplo.demo.api.dto;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "categorias")
-public class Categoria {
-	@Id 
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CategoriaResponse {
 	private Long id;
-	
-	@Column(nullable = false, length = 100)
 	private String nombre;
+	private String descripcion;
 
 	public Long getId() {
 		return id;
@@ -28,7 +21,11 @@ public class Categoria {
 		this.nombre = nombre;
 	}
 
-	
-	
-	
+	public String getDescripcion() {
+		return descripcion;
+	}
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
 }
